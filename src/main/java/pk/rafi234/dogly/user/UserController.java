@@ -35,13 +35,17 @@ public class UserController {
     }
 
     @DeleteMapping("/api/user/{email}")
-    @ResponseStatus(HttpStatus.GONE)
-    public ResponseEntity<?> deleteUser(@PathVariable String email) {
-        return ResponseEntity.ok(userDetailsService.deleteUser(email));
+    public void deleteUser(@PathVariable String email) {
+        userDetailsService.deleteUser(email);
     }
 
-    @PutMapping("/api/user")
+    @PutMapping("/api/user/update/password")
     public ResponseEntity<PasswordChangeResponse> updatePassword(@RequestBody PasswordChangeRequest passwordChangeRequest) {
         return ResponseEntity.ok(userDetailsService.updatePassword(passwordChangeRequest.getNewPassword()));
+    }
+
+    @PutMapping("/api/user/update")
+    public ResponseEntity<UserResponse> updateUser(@RequestBody UserRequest userRequest) {
+        return ResponseEntity.ok(userDetailsService.updateUser(userRequest));
     }
 }

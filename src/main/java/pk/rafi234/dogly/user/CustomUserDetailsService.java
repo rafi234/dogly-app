@@ -14,7 +14,11 @@ public interface CustomUserDetailsService {
 
     UserResponse getUser(String email);
 
-    UserResponse deleteUser(String email);
+    void deleteUser(String email);
 
     PasswordChangeResponse updatePassword(String newPassword);
+
+    void setStateOfUser(User user, boolean state);
+
+    UserResponse updateUser(UserRequest userRequest);
 }

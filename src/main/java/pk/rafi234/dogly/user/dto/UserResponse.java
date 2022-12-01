@@ -22,6 +22,7 @@ public class UserResponse {
     private Address address;
     private List<DogResponse> dogs;
     private Set<String> roles;
+    private boolean isActive;
 
     public UserResponse(User user) {
         this.id = user.getId().toString();
@@ -31,6 +32,7 @@ public class UserResponse {
         this.address = user.getAddress();
         this.roles = getSetOfRoles(user.getRoles());
         this.dogs = getDogList(user.getDogs());
+        this.isActive = user.isActive();
     }
 
     private Set<String> getSetOfRoles(Set<Group> rolesToMap) {

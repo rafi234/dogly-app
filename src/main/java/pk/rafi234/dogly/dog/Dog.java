@@ -32,9 +32,4 @@ public class Dog implements Serializable {
 
     @OneToMany(mappedBy = "dog")
     private List<DogAd> dogAds = new ArrayList<>();
-
-    @Lob
-    @Basic(fetch = FetchType.LAZY)
-    @Column(name = "dog_picture")
-    private byte[] dogPicture;
 }

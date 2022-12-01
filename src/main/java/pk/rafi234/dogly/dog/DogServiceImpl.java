@@ -11,19 +11,17 @@ public class DogServiceImpl implements IDogService {
 
     private final DogRepository dogRepository;
     private final IAuthenticationFacade authenticationFacade;
-    private final UUID uuid;
 
     @Autowired
-    public DogServiceImpl(DogRepository dogRepository, IAuthenticationFacade authenticationFacade, UUID uuid) {
+    public DogServiceImpl(DogRepository dogRepository, IAuthenticationFacade authenticationFacade) {
         this.dogRepository = dogRepository;
         this.authenticationFacade = authenticationFacade;
-        this.uuid = uuid;
     }
 
     @Override
     public DogResponse addDog(DogRequest dogRequest) {
         Dog dog = new Dog();
-        dog.setId(uuid);
+        dog.setId(UUID.randomUUID());
         dog.setName(dogRequest.name());
         dog.setBreed(dogRequest.breed());
         dog.setDogsBirth(Date.valueOf(dogRequest.dogsBirth()));

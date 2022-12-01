@@ -10,6 +10,10 @@ public class AuthenticationFacade implements IAuthenticationFacade {
 
     @Override
     public User getAuthentication() {
-        return ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+        try {
+            return ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+        } catch (ClassCastException e) {
+            throw new RuntimeException("no user is logged in");
+        }
     }
 }

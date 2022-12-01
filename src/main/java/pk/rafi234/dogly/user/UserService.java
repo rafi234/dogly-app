@@ -28,20 +28,18 @@ public class UserService implements CustomUserDetailsService {
 
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
-    private final UUID uuid;
     private final PasswordEncoder passwordEncoder;
 
     private final IAuthenticationFacade authenticationFacade;
 
     @Autowired
     public UserService(AddressRepository addressRepository, GroupRepository groupRepository,
-                       UserRepository userRepository, UUID uuid,
+                       UserRepository userRepository,
                        PasswordEncoder passwordEncoder, IAuthenticationFacade authenticationFacade
     ) {
         this.addressRepository = addressRepository;
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
-        this.uuid = uuid;
         this.passwordEncoder = passwordEncoder;
         this.authenticationFacade = authenticationFacade;
     }
@@ -53,7 +51,7 @@ public class UserService implements CustomUserDetailsService {
             throw new UserAlreadyExist("User with " + userRequest.getEmail() + " already exist!");
         }
         Address address = createAddress(userRequest);
-        User user = new User(uuid, userRequest.getName(), userRequest.getSurname(),
+        User user = new User(UUID.randomUUID(), userRequest.getName(), userRequest.getSurname(),
                 userRequest.getEmail(), passwordEncoder.encode(userRequest.getPassword()));
         addDefaultRole(user);
         user.setAddress(address);
@@ -75,9 +73,8 @@ public class UserService implements CustomUserDetailsService {
     }
 
     @Override
-    public UserResponse deleteUser(String email) {
+    public void deleteUser(String email) {
         userRepository.delete(getUserByEmailOrThrow(email));
-        return null;
     }
 
     @Override
@@ -88,6 +85,19 @@ public class UserService implements CustomUserDetailsService {
         return new PasswordChangeResponse(user.getEmail(), "Password changed successfully!");
     }
 
+    @Override
+    public void setStateOfUser(User user, boolean state) {
+        user.setActive(state);
+        userRepository.save(user);
+    }
+
+    @Override
+    public UserResponse updateUser(UserRequest userRequest) {
+        User user = getUserByEmailOrThrow(userRequest.getEmail());
+        updateUser(user, userRequest);
+        return new UserResponse(userRepository.save(user));
+    }
+
     private User getUserByEmailOrThrow(String email) {
         return userRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User with email" + email + " not found!"));
@@ -95,7 +105,7 @@ public class UserService implements CustomUserDetailsService {
 
     private Address createAddress(UserRequest userRequest) {
         return Address.builder()
-                .id(uuid)
+                .id(UUID.randomUUID())
                 .street(userRequest.getStreet())
                 .country(userRequest.getCountry())
                 .voivodeship(userRequest.getVoivodeship())
@@ -110,5 +120,47 @@ public class UserService implements CustomUserDetailsService {
             group = groupRepository.findByRole(Role.ADMIN);
         }
         user.getRoles().add(group);
+    }
+
+    private void updateUser(User user, UserRequest userRequest) {
+        String newEmail = userRequest.getEmail();
+        if (newEmail != null) {
+            user.setEmail(newEmail);
+        }
+
+        String newName = userRequest.getName();
+        if (newName != null) {
+            user.setName(newName);
+        }
+
+        String newSurname = userRequest.getSurname();
+        if (newSurname != null) {
+            user.setSurname(newSurname);
+        }
+
+        String newStreet = userRequest.getStreet();
+        if (newStreet != null) {
+            user.getAddress().setStreet(newStreet);
+        }
+
+        String newCountry = userRequest.getCountry();
+        if (newCountry != null) {
+            user.getAddress().setCountry(newCountry);
+        }
+
+        String newVoivodeship = userRequest.getVoivodeship();
+        if (newVoivodeship != null) {
+            user.getAddress().setVoivodeship(newVoivodeship);
+        }
+
+        String newPostalCode = userRequest.getPostalCode();
+        if (newPostalCode != null) {
+            user.getAddress().setPostalCode(newPostalCode);
+        }
+
+        String newCity = userRequest.getCity();
+        if (newCity != null) {
+            user.getAddress().setCity(newCity);
+        }
     }
 }
