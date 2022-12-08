@@ -10,7 +10,7 @@ import javax.validation.constraints.Pattern;
 
 @Getter @Setter
 @NoArgsConstructor
-public class PasswordChangeRequest {
+public final class PasswordChangeRequest {
     @NotBlank
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{10,}")
     @JsonProperty(value = "new_password")

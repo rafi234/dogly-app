@@ -4,7 +4,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.springframework.scheduling.annotation.Async;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -47,18 +46,19 @@ public class WepScrapper {
                     final Elements row = element.select(".title");
                     final String fullName = row.text();
                     final String link = row.attr("href");
+                    final String imgUrl = element.select(".attachment-post-thumbnail.size-post-thumbnail.wp-post-image").attr("src");
                     if (!fullName.equals("")) {
                         final DogPark newRow = prepareString(fullName);
                         newRow.setUrl(link);
                         newRow.setId(UUID.randomUUID());
                         newRow.setVoivodeship(voivodeship);
+                        newRow.setImgUrl(imgUrl);
                         if (!dogParks.contains(newRow) && !fullName.contains(PLANNED)) {
                             dogParks.add(newRow);
                         }
                     }
                 }
             }
-            dogParks.forEach(System.out::println);
             return dogParks;
 
         } catch (IOException e) {
@@ -85,8 +85,13 @@ public class WepScrapper {
             dogPark.setType("Wybieg dla psów");
             dogPark.setCity(preparedString[0]);
             dogPark.setLocation(preparedString[1] + " " + preparedString[2] + " " + preparedString[3]);
-        } else {
-            dogPark.setType(preparedString[0] + " " + preparedString[1] + " " + preparedString[2]);
+        } else if(preparedString[1].equals("toaleta")) {
+            dogPark.setType(preparedString[0] + " " + preparedString[1]);
+            dogPark.setCity(preparedString[2]);
+            dogPark.setLocation(preparedString[3] + "  " + preparedString[4]);
+        }
+        else {
+             dogPark.setType(preparedString[0] + " " + preparedString[1] + " " + preparedString[2]);
             dogPark.setCity(prepareCity(preparedString));
             dogPark.setLocation(prepareLocation(preparedString));
         }

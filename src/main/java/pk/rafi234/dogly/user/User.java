@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import pk.rafi234.dogly.dog.Dog;
+import pk.rafi234.dogly.dog_ad.DogAd;
 import pk.rafi234.dogly.meetings.Meeting;
 import pk.rafi234.dogly.security.role.Group;
 import pk.rafi234.dogly.user.address.Address;
@@ -49,6 +50,9 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     List<Meeting> meetings = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    List<DogAd> dogAds = new ArrayList<>();
 
     public User(UUID id, String name, String surname, String email, String password) {
         this.id = id;

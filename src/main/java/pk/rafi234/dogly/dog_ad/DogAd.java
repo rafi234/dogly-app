@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import pk.rafi234.dogly.dog.Dog;
+import pk.rafi234.dogly.user.User;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -23,4 +24,11 @@ public class DogAd implements Serializable {
 
     @Column(columnDefinition = "TIMESTAMP")
     private LocalDateTime date;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    private String description;
+    private double price;
 }

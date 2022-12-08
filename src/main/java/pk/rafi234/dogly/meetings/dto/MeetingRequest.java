@@ -2,14 +2,14 @@ package pk.rafi234.dogly.meetings.dto;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
+import pk.rafi234.dogly.meetings.scrapler.DogPark;
 
 @Data
 @NoArgsConstructor
-public class MeetingRequest {
+public final class MeetingRequest {
 
-    private String imageUrl;
+    private String title;
     private String description;
-    private LocalDateTime date;
+    private String date;
+    private DogPark dogPark;
 }

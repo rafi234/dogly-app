@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PasswordChangeResponse {
+public final class PasswordChangeResponse {
     private String email;
     private String status;
 }

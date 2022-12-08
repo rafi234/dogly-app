@@ -3,6 +3,7 @@ package pk.rafi234.dogly.meetings.scrapler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import pk.rafi234.dogly.dog.Dog;
 
 import javax.transaction.Transactional;
 import java.util.List;
@@ -21,7 +22,7 @@ public class DogParkService {
     @Transactional
     public void addParks() {
         final List<DogPark> dogParks = getAllDogParks();
-        dogParkRepository.deleteAll();
+        checkIfUpdateIsNeeded();
         dogParkRepository.saveAll(dogParks);
     }
 
@@ -40,10 +41,24 @@ public class DogParkService {
         return dogParkRepository.findAllByVoivodeship(voivodeship);
     }
 
+    public void updateDogParks() {
+        final List<DogPark> dogParksLoaded = getAllDogParks();
+        final List<DogPark> dogParks = dogParkRepository.findAll();
+        for (DogPark dogPark : dogParksLoaded) {
+            if (!isDogParkInDatabase(dogParks, dogPark)) {
+                dogParkRepository.save(dogPark);
+            }
+        }
+    }
+
+    private boolean isDogParkInDatabase(List<DogPark> dogParks, DogPark dogPark) {
+        return dogParks.stream().anyMatch(dp -> dp.getLocation().equals(dogPark.getLocation()));
+    }
+
     private void checkIfUpdateIsNeeded() {
         final long currentTimeInMillis = System.currentTimeMillis();
         if (lastUpdatedRequest == 0L || currentTimeInMillis - lastUpdatedRequest >= timeToUpdate) {
-            addParks();
+            updateDogParks();
             lastUpdatedRequest = currentTimeInMillis;
         }
     }

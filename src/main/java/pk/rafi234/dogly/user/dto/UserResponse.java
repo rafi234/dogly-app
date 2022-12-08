@@ -14,7 +14,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Getter @Setter
-public class UserResponse {
+public final class UserResponse {
     private String id;
     private String name;
     private String surname;

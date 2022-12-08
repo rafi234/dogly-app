@@ -6,6 +6,7 @@ import pk.rafi234.dogly.meetings.dto.MeetingRequest;
 import pk.rafi234.dogly.meetings.dto.MeetingResponse;
 import pk.rafi234.dogly.security.authenticatedUser.IAuthenticationFacade;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class MeetingsServiceImpl implements MeetingsService {
 
     private final MeetingsRepository meetingsRepository;
@@ -22,12 +24,15 @@ public class MeetingsServiceImpl implements MeetingsService {
     @Override
     public MeetingResponse addMeeting(MeetingRequest meetingReq) {
         Meeting meeting = new Meeting();
+        LocalDateTime time = LocalDateTime.parse(meetingReq.getDate());
         meeting.setUser(authenticationFacade.getAuthentication());
+        meeting.setTitle(meetingReq.getTitle());
         meeting.setId(UUID.randomUUID());
         meeting.setDescription(meetingReq.getDescription());
-        meeting.setDate(meetingReq.getDate());
+        meeting.setDate(time);
         meeting.setAddedAt(LocalDateTime.now());
-        meeting.setImageUrl(meetingReq.getImageUrl());
+        meeting.setDogPark(meetingReq.getDogPark());
+        System.out.println("Hello!!!");
         return new MeetingResponse(meetingsRepository.save(meeting));
     }
 
@@ -38,9 +43,22 @@ public class MeetingsServiceImpl implements MeetingsService {
 
     @Override
     public List<MeetingResponse> getAllMeetings() {
-        return meetingsRepository.findAll()
+        return meetingsRepository.findAllOrderByAddedAt()
                 .stream()
                 .map(MeetingResponse::new)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public MeetingResponse action(UUID id, String action) {
+        Meeting meeting = meetingsRepository.findById(id).orElseThrow();
+        if (action.equals("going")) {
+            int going = meeting.getGoing() + 1;
+            meeting.setGoing(going);
+        } else if (action.equals("interested")) {
+            int interested = meeting.getInterested() + 1;
+            meeting.setInterested(interested);
+        }
+        return new MeetingResponse(meetingsRepository.save(meeting));
     }
 }

@@ -9,7 +9,7 @@ import javax.validation.constraints.Pattern;
 
 @Getter
 @NoArgsConstructor
-public class UserRequest {
+public final class UserRequest {
     @NotBlank
     private String name;
     private String surname;
