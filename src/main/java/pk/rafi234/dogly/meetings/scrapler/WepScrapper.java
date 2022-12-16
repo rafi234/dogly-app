@@ -89,6 +89,10 @@ public class WepScrapper {
             dogPark.setType(preparedString[0] + " " + preparedString[1]);
             dogPark.setCity(preparedString[2]);
             dogPark.setLocation(preparedString[3] + "  " + preparedString[4]);
+        } else if (preparedString[3].equals("toaleta")) {
+            dogPark.setType(preparedString[0] + " " + preparedString[1] + " " + preparedString[2]);
+            dogPark.setCity("Warszawa");
+            dogPark.setLocation(prepareLocation(preparedString).replace("dla psów ", ""));
         }
         else {
              dogPark.setType(preparedString[0] + " " + preparedString[1] + " " + preparedString[2]);

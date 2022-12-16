@@ -35,7 +35,6 @@ public class DogPark implements Serializable {
     @OneToMany(mappedBy = "dogPark")
     private List<Meeting> meetings = new ArrayList<>();
 
-
     @Override
     public boolean equals(Object o) {
         if (o instanceof DogPark) {
