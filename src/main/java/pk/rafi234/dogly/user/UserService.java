@@ -1,6 +1,13 @@
 package pk.rafi234.dogly.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -8,15 +15,16 @@ import pk.rafi234.dogly.security.authenticatedUser.IAuthenticationFacade;
 import pk.rafi234.dogly.security.role.Group;
 import pk.rafi234.dogly.security.role.GroupRepository;
 import pk.rafi234.dogly.security.role.Role;
+import pk.rafi234.dogly.security.util.JwtUtil;
 import pk.rafi234.dogly.user.address.Address;
 import pk.rafi234.dogly.user.address.AddressRepository;
-import pk.rafi234.dogly.user.dto.PasswordChangeResponse;
-import pk.rafi234.dogly.user.dto.UserRequest;
-import pk.rafi234.dogly.user.dto.UserResponse;
+import pk.rafi234.dogly.user.dto.*;
 import pk.rafi234.dogly.user.user_exception.UserAlreadyExist;
 
 import javax.transaction.Transactional;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -32,16 +40,23 @@ public class UserService implements CustomUserDetailsService {
 
     private final IAuthenticationFacade authenticationFacade;
 
+    private final AuthenticationManager authenticationManager;
+    private final UserDetailsService userDetailsService;
+    private final JwtUtil jwtUtil;
+
     @Autowired
     public UserService(AddressRepository addressRepository, GroupRepository groupRepository,
                        UserRepository userRepository,
-                       PasswordEncoder passwordEncoder, IAuthenticationFacade authenticationFacade
-    ) {
+                       PasswordEncoder passwordEncoder, IAuthenticationFacade authenticationFacade,
+                       AuthenticationManager authenticationManager, UserDetailsService userDetailsService, JwtUtil jwtUtil) {
         this.addressRepository = addressRepository;
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationFacade = authenticationFacade;
+        this.authenticationManager = authenticationManager;
+        this.userDetailsService = userDetailsService;
+        this.jwtUtil = jwtUtil;
     }
 
     @Override
@@ -96,6 +111,35 @@ public class UserService implements CustomUserDetailsService {
         User user = getUserByEmailOrThrow(userRequest.getEmail());
         updateUser(user, userRequest);
         return new UserResponse(userRepository.save(user));
+    }
+
+    @Override
+    public JwtResponse createJwtToken(JwtRequest jwtRequest) throws Exception {
+        authenticate(jwtRequest.getEmail(), jwtRequest.getPassword());
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(jwtRequest.getEmail());
+        String token = jwtUtil.generateToken(userDetails);
+
+        User user = userRepository.findByEmailIgnoreCase(jwtRequest.getEmail()).get();
+        return new JwtResponse(new UserResponse(user), token);
+    }
+
+    private void authenticate(String email, String password) throws Exception {
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+        } catch (DisabledException e) {
+            throw new Exception("USER_DISABLED", e);
+        } catch (BadCredentialsException e) {
+            throw new Exception("INVALID_CREDENTIALS", e);
+        }
+    }
+
+    private Set<SimpleGrantedAuthority> getAuthority(User user) {
+        Set<SimpleGrantedAuthority> authorities = new HashSet<>();
+        user.getRoles().forEach(role -> {
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getRole().name()));
+        });
+        return authorities;
     }
 
     private User getUserByEmailOrThrow(String email) {

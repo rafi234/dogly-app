@@ -1,6 +1,7 @@
 package pk.rafi234.dogly.meetings;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import pk.rafi234.dogly.meetings.dto.MeetingRequest;
 import pk.rafi234.dogly.meetings.dto.MeetingResponse;
@@ -10,6 +11,7 @@ import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,5 +62,19 @@ public class MeetingsServiceImpl implements MeetingsService {
             meeting.setInterested(interested);
         }
         return new MeetingResponse(meetingsRepository.save(meeting));
+    }
+
+    @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.DAYS)
+    private void checkIfMeetingsNeedUpdate() {
+        meetingsRepository.findAllOrderByAddedAt().forEach(this::deleteExpiredMeeting);
+    }
+    private void deleteExpiredMeeting(Meeting meeting) {
+        if (isMeetingExpired(meeting)) {
+            deleteMeeting(meeting.getId());
+        }
+    }
+
+    private boolean isMeetingExpired(Meeting meeting) {
+        return meeting.getDate().plusHours(5L).isBefore(LocalDateTime.now());
     }
 }

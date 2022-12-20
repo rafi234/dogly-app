@@ -10,7 +10,6 @@ public interface MeetingsService {
     MeetingResponse addMeeting(MeetingRequest meeting);
     void deleteMeeting(UUID id);
     List<MeetingResponse> getAllMeetings();
-
     MeetingResponse action(UUID id, String action);
 }
 

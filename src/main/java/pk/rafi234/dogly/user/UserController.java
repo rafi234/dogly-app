@@ -4,11 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import pk.rafi234.dogly.user.dto.PasswordChangeRequest;
-import pk.rafi234.dogly.user.dto.PasswordChangeResponse;
-import pk.rafi234.dogly.user.dto.UserRequest;
-import pk.rafi234.dogly.user.dto.UserResponse;
+import pk.rafi234.dogly.user.dto.*;
 
 import java.util.List;
 
@@ -22,6 +21,11 @@ public class UserController {
     @PostMapping("/api/auth/signup")
     public ResponseEntity<UserResponse> createUser(@RequestBody UserRequest userRequest) {
         return ResponseEntity.ok(userDetailsService.addUser(userRequest));
+    }
+
+    @PostMapping("/api/authenticate")
+    public ResponseEntity<JwtResponse> createJwtToken(@RequestBody JwtRequest jwtRequest) throws Exception {
+        return ResponseEntity.ok(userDetailsService.createJwtToken(jwtRequest));
     }
 
     @GetMapping("/api/user")
