@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Service
+@Transactional
 public class UserService implements CustomUserDetailsService {
 
     private final AddressRepository addressRepository;
@@ -60,7 +61,6 @@ public class UserService implements CustomUserDetailsService {
     }
 
     @Override
-    @Transactional
     public UserResponse addUser(UserRequest userRequest) {
         if (userRepository.existsByEmail(userRequest.getEmail())) {
             throw new UserAlreadyExist("User with " + userRequest.getEmail() + " already exist!");
@@ -101,7 +101,8 @@ public class UserService implements CustomUserDetailsService {
     }
 
     @Override
-    public void setStateOfUser(User user, boolean state) {
+    public void setStateOfUser(boolean state) {
+        User user = authenticationFacade.getAuthentication();
         user.setActive(state);
         userRepository.save(user);
     }
@@ -124,6 +125,12 @@ public class UserService implements CustomUserDetailsService {
         return new JwtResponse(new UserResponse(user), token);
     }
 
+    @Override
+    public UserResponse getLoggedUser() {
+        User loggedUser = authenticationFacade.getAuthentication();
+        return new UserResponse(loggedUser);
+    }
+
     private void authenticate(String email, String password) throws Exception {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
@@ -134,13 +141,6 @@ public class UserService implements CustomUserDetailsService {
         }
     }
 
-    private Set<SimpleGrantedAuthority> getAuthority(User user) {
-        Set<SimpleGrantedAuthority> authorities = new HashSet<>();
-        user.getRoles().forEach(role -> {
-            authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getRole().name()));
-        });
-        return authorities;
-    }
 
     private User getUserByEmailOrThrow(String email) {
         return userRepository.findByEmailIgnoreCase(email)

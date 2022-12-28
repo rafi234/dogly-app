@@ -15,9 +15,11 @@ public interface CustomUserDetailsService {
 
     PasswordChangeResponse updatePassword(String newPassword);
 
-    void setStateOfUser(User user, boolean state);
+    void setStateOfUser(boolean state);
 
     UserResponse updateUser(UserRequest userRequest);
 
     JwtResponse createJwtToken(JwtRequest jwtRequest) throws Exception;
+
+    UserResponse getLoggedUser();
 }

@@ -65,7 +65,7 @@ public class MeetingsServiceImpl implements MeetingsService {
     }
 
     @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.DAYS)
-    private void checkIfMeetingsNeedUpdate() {
+    public void checkIfMeetingsNeedUpdate() {
         meetingsRepository.findAllOrderByAddedAt().forEach(this::deleteExpiredMeeting);
     }
     private void deleteExpiredMeeting(Meeting meeting) {

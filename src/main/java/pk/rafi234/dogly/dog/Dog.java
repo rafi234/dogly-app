@@ -4,15 +4,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import pk.rafi234.dogly.dog_ad.DogAd;
+import pk.rafi234.dogly.image.Image;
 import pk.rafi234.dogly.user.User;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @NoArgsConstructor
@@ -29,6 +27,9 @@ public class Dog implements Serializable {
     private String breed;
     @Temporal(TemporalType.DATE)
     private Date dogsBirth;
+
+    @OneToMany(mappedBy = "dog")
+    private Set<Image> images = new HashSet<>();
 
     @OneToMany(mappedBy = "dog")
     private List<DogAd> dogAds = new ArrayList<>();

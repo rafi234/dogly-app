@@ -1,4 +1,6 @@
 package pk.rafi234.dogly.dog;
 
-public record DogRequest(String name, String dogsBirth, String breed) {
+import java.util.Date;
+
+public record DogRequest(String name, Date dogsBirth, String breed) {
 }

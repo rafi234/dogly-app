@@ -18,8 +18,6 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import pk.rafi234.dogly.security.UserDetailsImpl;
-import pk.rafi234.dogly.security.authenticatedUser.CustomSecurityContextLogoutHandler;
-import pk.rafi234.dogly.security.authenticatedUser.CustomOnAuthenticationHandler;
 import pk.rafi234.dogly.security.filter.CustomAuthorizationFilter;
 import pk.rafi234.dogly.user.CustomUserDetailsService;
 import pk.rafi234.dogly.user.UserRepository;
@@ -96,16 +94,6 @@ public class WebSecurityConfiguration {
         authProvider.setUserDetailsService(detailsService());
         authProvider.setPasswordEncoder(getEncoder());
         return authProvider;
-    }
-
-    @Bean
-    public AuthenticationSuccessHandler authenticationSuccessHandler() {
-        return new CustomOnAuthenticationHandler(userDetailsService);
-    }
-
-    @Bean
-    public SecurityContextLogoutHandler securityContextLogoutHandler() {
-        return new CustomSecurityContextLogoutHandler(userDetailsService);
     }
 
     @Bean

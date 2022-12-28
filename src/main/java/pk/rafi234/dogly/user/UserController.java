@@ -23,6 +23,11 @@ public class UserController {
         return ResponseEntity.ok(userDetailsService.addUser(userRequest));
     }
 
+    @PutMapping("/api/logout")
+    public void logout() {
+        userDetailsService.setStateOfUser(false);
+    }
+
     @PostMapping("/api/authenticate")
     public ResponseEntity<JwtResponse> createJwtToken(@RequestBody JwtRequest jwtRequest) throws Exception {
         return ResponseEntity.ok(userDetailsService.createJwtToken(jwtRequest));
@@ -36,6 +41,11 @@ public class UserController {
     @GetMapping("/api/user/{email}")
     public ResponseEntity<UserResponse> getUserByEmail(@PathVariable String email) {
         return ResponseEntity.ok(userDetailsService.getUser(email));
+    }
+
+    @GetMapping("/api/user/logged")
+    public ResponseEntity<UserResponse> getLoggedUser() {
+        return ResponseEntity.ok(userDetailsService.getLoggedUser());
     }
 
     @DeleteMapping("/api/user/{email}")
