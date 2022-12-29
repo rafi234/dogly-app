@@ -31,4 +31,8 @@ public class ImageService {
         }
         return imageSet;
     }
+
+    public void deleteAllDogImages(Dog dog) {
+        imageRepository.deleteByDog(dog);
+    }
 }

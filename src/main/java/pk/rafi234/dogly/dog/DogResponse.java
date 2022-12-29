@@ -17,14 +17,14 @@ import java.util.stream.Collectors;
 public final class DogResponse {
     private UUID id;
     private String name;
-    private Date birth;
+    private Date dogsBirth;
     private String breed;
     private Set<ImageResponse> images;
 
     public DogResponse(Dog dog) {
         this.id = dog.getId();
         this.name = dog.getName();
-        this.birth = dog.getDogsBirth();
+        this.dogsBirth = dog.getDogsBirth();
         this.breed = dog.getBreed();
         this.images = prepareImages(dog.getImages());
     }

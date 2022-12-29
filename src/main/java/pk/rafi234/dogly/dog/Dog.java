@@ -28,9 +28,17 @@ public class Dog implements Serializable {
     @Temporal(TemporalType.DATE)
     private Date dogsBirth;
 
-    @OneToMany(mappedBy = "dog")
+    @OneToMany( mappedBy = "dog", cascade = {CascadeType.ALL})
     private Set<Image> images = new HashSet<>();
 
     @OneToMany(mappedBy = "dog")
     private List<DogAd> dogAds = new ArrayList<>();
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Dog dog) {
+            return dog.getId().equals(this.id);
+        }
+        return false;
+    }
 }

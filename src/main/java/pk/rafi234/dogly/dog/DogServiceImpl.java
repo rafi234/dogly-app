@@ -11,9 +11,7 @@ import pk.rafi234.dogly.user.User;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.sql.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,23 +31,38 @@ public class DogServiceImpl implements IDogService {
 
     @Override
     public DogResponse addDog(DogRequest dogRequest, MultipartFile[] files) {
-        try {
-            Dog dog = new Dog();
-            dog.setId(UUID.randomUUID());
-            dog.setName(dogRequest.name());
-            dog.setBreed(dogRequest.breed());
+
+        Dog dog = new Dog();
+        dog.setId(UUID.randomUUID());
+        dog.setName(dogRequest.name());
+        dog.setBreed(dogRequest.breed());
+        dog.setDogsBirth(dogRequest.dogsBirth());
+        dog.setOwner(authenticationFacade.getAuthentication());
+
+        Dog savedDog = dogRepository.save(dog);
+        prepareImages(savedDog, files);
+        return new DogResponse(savedDog);
+    }
+
+    @Override
+    public DogResponse editDog(DogRequest dogRequest, MultipartFile[] files) {
+        Dog dog = dogRepository.findById(UUID.fromString(dogRequest.id())).orElseThrow();
+
+        if (!dogRequest.dogsBirth().equals(dog.getDogsBirth()))
             dog.setDogsBirth(dogRequest.dogsBirth());
-            dog.setOwner(authenticationFacade.getAuthentication());
-            Set<Image> images = imageService.uploadImage(files);
-            Dog savedDog = dogRepository.save(dog);
-            images.forEach(i -> {
-                i.setDog(savedDog);
-                imageService.saveImage(i);
-            });
-            return new DogResponse(savedDog);
-        } catch (IOException e) {
-            throw new RuntimeException("Problems with uploading files!");
-        }
+
+        if (!dogRequest.name().equals(dog.getName()))
+            dog.setName(dogRequest.name());
+
+        if (!dogRequest.breed().equals(dog.getBreed()))
+            dog.setBreed(dogRequest.breed());
+
+        imageService.deleteAllDogImages(dog);
+        dog.setImages(new HashSet<>());
+        Dog savedDog = dogRepository.save(dog);
+        prepareImages(savedDog, files);
+
+        return new DogResponse(savedDog);
     }
 
     @Override
@@ -59,5 +72,25 @@ public class DogServiceImpl implements IDogService {
         return dogs.stream()
                 .map(DogResponse::new)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteDogById(String id) {
+        UUID uuid = UUID.fromString(id);
+        dogRepository.deleteById(uuid);
+    }
+
+    private void prepareImages(Dog savedDog, MultipartFile[] files) {
+        try {
+            Set<Image> images = imageService.uploadImage(files);
+
+            images.forEach(i -> {
+                    i.setDog(savedDog);
+                    imageService.saveImage(i);
+            });
+        } catch (IOException e) {
+            throw new RuntimeException("Problems with uploading files!");
+        }
+
     }
 }
