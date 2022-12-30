@@ -4,12 +4,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
 public final class DogAdRequest {
 
-    private String dogId;
+    private Set<String> dogIds;
     private String description;
     private LocalDateTime date;
 }

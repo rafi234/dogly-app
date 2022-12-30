@@ -31,8 +31,8 @@ public class Dog implements Serializable {
     @OneToMany( mappedBy = "dog", cascade = {CascadeType.ALL})
     private Set<Image> images = new HashSet<>();
 
-    @OneToMany(mappedBy = "dog")
-    private List<DogAd> dogAds = new ArrayList<>();
+    @ManyToMany(cascade = {CascadeType.REMOVE}, mappedBy = "dogs")
+    private Set<DogAd> dogAds = new HashSet<>();
 
     @Override
     public boolean equals(Object obj) {

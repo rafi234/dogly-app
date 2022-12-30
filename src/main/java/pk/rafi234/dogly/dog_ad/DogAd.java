@@ -4,13 +4,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import pk.rafi234.dogly.dog.Dog;
-import pk.rafi234.dogly.image.Image;
 import pk.rafi234.dogly.user.User;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Getter @Setter
@@ -19,9 +18,14 @@ public class DogAd implements Serializable {
 
     @Id
     private UUID id;
-    @ManyToOne
-    @JoinColumn(name = "dog_id")
-    private Dog dog;
+
+    @ManyToMany
+    @JoinTable(
+            name = "dog_ad_dogs",
+            joinColumns = @JoinColumn(name = "dog_ad_id"),
+            inverseJoinColumns = @JoinColumn(name = "dog_id")
+    )
+    private Set<Dog> dogs = new HashSet<>();
 
     @Column(columnDefinition = "TIMESTAMP")
     private LocalDateTime date;
@@ -32,10 +36,4 @@ public class DogAd implements Serializable {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-
-    @OneToOne(orphanRemoval = true)
-    @JoinColumn(name = "image_id", referencedColumnName = "id")
-    private Image image;
-
-
 }

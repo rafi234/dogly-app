@@ -2,10 +2,13 @@ package pk.rafi234.dogly.dog_ad;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import pk.rafi234.dogly.dog.Dog;
 import pk.rafi234.dogly.dog.DogResponse;
 import pk.rafi234.dogly.user.dto.UserResponse;
 
 import java.time.LocalDateTime;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor
@@ -14,8 +17,8 @@ public final class DogAdResponse {
     private String id;
     private double price;
     private String description;
-    private UserResponse userResponse;
-    private DogResponse dogResponse;
+    private UserResponse user;
+    private Set<DogResponse> dogs;
     private LocalDateTime date;
 
     public DogAdResponse(DogAd dogAd) {
@@ -23,7 +26,13 @@ public final class DogAdResponse {
         this.id = dogAd.getId().toString();
         this.price = dogAd.getPrice();
         this.description = dogAd.getDescription();
-        this.userResponse = new UserResponse(dogAd.getUser());
-        this.dogResponse = new DogResponse(dogAd.getDog());
+        this.user = new UserResponse(dogAd.getUser());
+        this.dogs = createDogsSet(dogAd.getDogs());
+    }
+
+    private Set<DogResponse> createDogsSet(Set<Dog> dogs) {
+        return dogs.stream()
+                .map(DogResponse::new)
+                .collect(Collectors.toSet());
     }
 }
