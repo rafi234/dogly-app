@@ -13,4 +13,5 @@ public final class DogAdRequest {
     private Set<String> dogIds;
     private String description;
     private LocalDateTime date;
+    private double price;
 }

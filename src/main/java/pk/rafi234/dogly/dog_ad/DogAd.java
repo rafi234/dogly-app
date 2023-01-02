@@ -33,6 +33,9 @@ public class DogAd implements Serializable {
     private String description;
 
     private double price;
+
+    @Column(columnDefinition = "TIMESTAMP")
+    private LocalDateTime addedAt;
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;

@@ -30,4 +30,12 @@ public class Group implements Serializable {
     public Group(Role role) {
         this.role = role;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Group group) {
+            return group.getRole().equals(this.role);
+        }
+        return false;
+    }
 }

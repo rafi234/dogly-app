@@ -20,9 +20,11 @@ public final class DogAdResponse {
     private UserResponse user;
     private Set<DogResponse> dogs;
     private LocalDateTime date;
+    private LocalDateTime addedAt;
 
     public DogAdResponse(DogAd dogAd) {
         this.date = dogAd.getDate();
+        this.addedAt = dogAd.getAddedAt();
         this.id = dogAd.getId().toString();
         this.price = dogAd.getPrice();
         this.description = dogAd.getDescription();

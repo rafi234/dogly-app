@@ -6,12 +6,15 @@ import org.springframework.web.multipart.MultipartFile;
 import pk.rafi234.dogly.image.Image;
 import pk.rafi234.dogly.image.ImageService;
 import pk.rafi234.dogly.security.authenticatedUser.IAuthenticationFacade;
+import pk.rafi234.dogly.security.role.Group;
 import pk.rafi234.dogly.user.User;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static pk.rafi234.dogly.security.role.Role.ADMIN;
 
 @Service
 @Transactional
@@ -67,7 +70,15 @@ public class DogServiceImpl implements IDogService {
     @Override
     public List<DogResponse> getLoggedUserDog() {
         User owner = authenticationFacade.getAuthentication();
-        List<Dog> dogs = dogRepository.findByOwner(owner);
+        List<Dog> dogs;
+        Group groupAdmin = new Group(ADMIN);
+        System.out.println(owner.getRoles().stream().anyMatch(role -> role.equals(groupAdmin)));
+        System.out.println();
+        System.out.println();
+        if (owner.getRoles().stream().anyMatch(role -> role.equals(groupAdmin)))
+            dogs = (List<Dog>) dogRepository.findAll();
+        else
+            dogs = dogRepository.findByOwner(owner);
         return dogs.stream()
                 .map(DogResponse::new)
                 .collect(Collectors.toList());
