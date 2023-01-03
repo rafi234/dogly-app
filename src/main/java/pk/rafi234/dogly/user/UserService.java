@@ -5,7 +5,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -22,9 +21,7 @@ import pk.rafi234.dogly.user.dto.*;
 import pk.rafi234.dogly.user.user_exception.UserAlreadyExist;
 
 import javax.transaction.Transactional;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -130,6 +127,10 @@ public class UserService implements CustomUserDetailsService {
         User loggedUser = authenticationFacade.getAuthentication();
         return new UserResponse(loggedUser);
     }
+    public User getUserByEmailOrThrow(String email) {
+        return userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User with email" + email + " not found!"));
+    }
 
     private void authenticate(String email, String password) throws Exception {
         try {
@@ -139,12 +140,6 @@ public class UserService implements CustomUserDetailsService {
         } catch (BadCredentialsException e) {
             throw new Exception("INVALID_CREDENTIALS", e);
         }
-    }
-
-
-    private User getUserByEmailOrThrow(String email) {
-        return userRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User with email" + email + " not found!"));
     }
 
     private Address createAddress(UserRequest userRequest) {

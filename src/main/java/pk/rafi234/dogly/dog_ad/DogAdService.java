@@ -6,12 +6,15 @@ import org.springframework.stereotype.Service;
 import pk.rafi234.dogly.dog.Dog;
 import pk.rafi234.dogly.dog.DogRepository;
 import pk.rafi234.dogly.security.authenticatedUser.IAuthenticationFacade;
+import pk.rafi234.dogly.user.User;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import static pk.rafi234.dogly.dog_ad.AdState.*;
 
 @Service
 @RequiredArgsConstructor
@@ -37,16 +40,72 @@ public class DogAdService {
     }
 
     public List<DogAdResponse> getAllDogAds() {
-        return dogAdRepository.findAll().stream()
-                .map(DogAdResponse::new)
-                .collect(Collectors.toList());
+        List<DogAd> dogAds = dogAdRepository.findAllByConfirmedUserIsNull();
+        return mapDogAdsListToDTO(dogAds);
+    }
+
+    public void confirmDogAd(DogAdRequest dogAdRequest) {
+        LocalDateTime confirmedAt = LocalDateTime.now();
+        User user = authenticationFacade.getAuthentication();
+        if (user.getId().toString().equals(dogAdRequest.getUser().getId()))
+            throw new RuntimeException("User can not confirm the walk created by itself");
+        setConfirmation(dogAdRequest, confirmedAt, user, WAITING_FOR_CONFIRMATION);
+    }
+
+    public void forbidConfirmation(DogAdRequest dogAdRequest) {
+        setConfirmation(dogAdRequest, null, null, DENIED);
+    }
+
+    public void allowConfirmation(DogAdRequest dogAdRequest) {
+        setConfirmation(dogAdRequest);
+    }
+
+    public List<DogAdResponse> getDogAds() {
+        User user = authenticationFacade.getAuthentication();
+        List<DogAd> dogAds = new ArrayList<>();
+        List<DogAd> dogAdsWaiting = dogAdRepository
+                .findAllByUserAndAdState(user, WAITING_FOR_CONFIRMATION);
+        List<DogAd> dogAdsAllowed = dogAdRepository.findAllByUserAndAdState(user, ALLOWED);
+        List<DogAd> dogAdsForbid = dogAdRepository.findAllByUserAndAdState(user, DENIED);
+        dogAds.addAll(dogAdsForbid);
+        dogAds.addAll(dogAdsAllowed);
+        dogAds.addAll(dogAdsWaiting);
+        return mapDogAdsListToDTO(dogAds);
+    }
+
+    public void deleteDogAd(String id) {
+        UUID uuid = UUID.fromString(id);
+        dogAdRepository.deleteById(uuid);
     }
 
     @Scheduled(timeUnit = TimeUnit.MINUTES, fixedDelay = 1)
     public void deleteExpiredDogAds() {
         List<DogAd> dogAds = dogAdRepository.findAll();
         dogAds.forEach(this::deleteExpiredDogAd);
+    }
 
+    private void setConfirmation(
+            DogAdRequest dogAdRequest,
+            LocalDateTime confirmedAt,
+            User user,
+            AdState state
+    ) {
+        UUID id = UUID.fromString(dogAdRequest.getId());
+        DogAd dogAd = dogAdRepository.findById(id).orElseThrow();
+        dogAd.setConfirmedAt(confirmedAt);
+        dogAd.setConfirmedUser(user);
+        dogAd.setAdState(state);
+        dogAdRepository.save(dogAd);
+    }
+
+    private void setConfirmation(
+            DogAdRequest dogAdRequest
+    ) {
+        UUID id = UUID.fromString(dogAdRequest.getId());
+        DogAd dogAd = dogAdRepository.findById(id).orElseThrow();
+        dogAd.setConfirmedAt(null);
+        dogAd.setAdState(AdState.ALLOWED);
+        dogAdRepository.save(dogAd);
     }
 
     private void deleteExpiredDogAd(DogAd dogAd) {
@@ -68,5 +127,11 @@ public class DogAdService {
 
     private Dog findDogOrThrow(UUID id) {
         return dogRepository.findById(id).orElseThrow();
+    }
+
+    private List<DogAdResponse> mapDogAdsListToDTO(List<DogAd> dogAds) {
+        return dogAds.stream()
+                .map(DogAdResponse::new)
+                .collect(Collectors.toList());
     }
 }

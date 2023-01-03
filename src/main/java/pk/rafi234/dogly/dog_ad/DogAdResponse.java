@@ -21,6 +21,9 @@ public final class DogAdResponse {
     private Set<DogResponse> dogs;
     private LocalDateTime date;
     private LocalDateTime addedAt;
+    private LocalDateTime confirmedAt;
+    private AdState adState;
+
 
     public DogAdResponse(DogAd dogAd) {
         this.date = dogAd.getDate();
@@ -30,6 +33,8 @@ public final class DogAdResponse {
         this.description = dogAd.getDescription();
         this.user = new UserResponse(dogAd.getUser());
         this.dogs = createDogsSet(dogAd.getDogs());
+        this.adState = dogAd.getAdState();
+        this.confirmedAt = dogAd.getConfirmedAt();
     }
 
     private Set<DogResponse> createDogsSet(Set<Dog> dogs) {

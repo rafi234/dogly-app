@@ -10,6 +10,8 @@ import javax.validation.constraints.Pattern;
 @Getter
 @NoArgsConstructor
 public final class UserRequest {
+
+    private String id;
     @NotBlank
     private String name;
     private String surname;

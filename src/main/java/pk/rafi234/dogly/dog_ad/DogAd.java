@@ -11,6 +11,8 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static pk.rafi234.dogly.dog_ad.AdState.WAITING_FOR_USER;
+
 @Entity
 @Getter @Setter
 @NoArgsConstructor
@@ -18,14 +20,6 @@ public class DogAd implements Serializable {
 
     @Id
     private UUID id;
-
-    @ManyToMany
-    @JoinTable(
-            name = "dog_ad_dogs",
-            joinColumns = @JoinColumn(name = "dog_ad_id"),
-            inverseJoinColumns = @JoinColumn(name = "dog_id")
-    )
-    private Set<Dog> dogs = new HashSet<>();
 
     @Column(columnDefinition = "TIMESTAMP")
     private LocalDateTime date;
@@ -39,4 +33,22 @@ public class DogAd implements Serializable {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    @ManyToMany
+    @JoinTable(
+            name = "dog_ad_dogs",
+            joinColumns = @JoinColumn(name = "dog_ad_id"),
+            inverseJoinColumns = @JoinColumn(name = "dog_id")
+    )
+    private Set<Dog> dogs = new HashSet<>();
+
+    @ManyToOne
+    @JoinColumn(name = "confirmed_user")
+    private User confirmedUser;
+
+    @Column(columnDefinition = "TIMESTAMP")
+    private LocalDateTime confirmedAt;
+
+    @Enumerated(EnumType.STRING)
+    private AdState adState = WAITING_FOR_USER;
 }

@@ -22,4 +22,30 @@ public class DogAdController {
     public ResponseEntity<DogAdResponse> createDogAd(@RequestBody DogAdRequest dogAdRequest) {
         return ResponseEntity.ok(dogAdService.addDogAd(dogAdRequest));
     }
+
+    @PutMapping("/confirm")
+    public void confirmDogAd(@RequestBody DogAdRequest dogAdRequest) {
+        dogAdService.confirmDogAd(dogAdRequest);
+    }
+
+    @PutMapping("/confirm/forbid")
+    public void deniedDogAd(@RequestBody DogAdRequest dogAdRequest) {
+        dogAdService.forbidConfirmation(dogAdRequest);
+    }
+
+    @PutMapping("/confirm/allow")
+    public void allowDogAd(@RequestBody DogAdRequest dogAdRequest) {
+        dogAdService.allowConfirmation(dogAdRequest);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteDogAd(@PathVariable String id) {
+        System.out.println(id);
+        dogAdService.deleteDogAd(id);
+    }
+
+    @GetMapping("/user")
+    public ResponseEntity<List<DogAdResponse>> getUserDogAds() {
+        return ResponseEntity.ok(dogAdService.getDogAds());
+    }
 }

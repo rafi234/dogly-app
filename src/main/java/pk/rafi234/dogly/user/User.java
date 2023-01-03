@@ -46,13 +46,16 @@ public class User {
     private Address address;
 
     @OneToMany(mappedBy = "owner")
-    List<Dog> dogs = new ArrayList<>();
+    private List<Dog> dogs = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
-    List<Meeting> meetings = new ArrayList<>();
+    private List<Meeting> meetings = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
-    List<DogAd> dogAds = new ArrayList<>();
+    private List<DogAd> dogAds = new ArrayList<>();
+
+    @OneToMany(mappedBy = "confirmedUser")
+    private Set<DogAd> confirmedDogAds = new HashSet<>();
 
     public User(UUID id, String name, String surname, String email, String password) {
         this.id = id;
