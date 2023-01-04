@@ -10,6 +10,7 @@ import java.util.UUID;
 @Repository
 public interface DogAdRepository extends CrudRepository<DogAd, UUID> {
     List<DogAd> findAll();
-    List<DogAd> findAllByConfirmedUserIsNull();
+    List<DogAd> findAllByAdState(AdState state);
     List<DogAd> findAllByUserAndAdState(User user, AdState state);
+    List<DogAd> findAllByConfirmedUserAndAdState(User user, AdState state);
 }

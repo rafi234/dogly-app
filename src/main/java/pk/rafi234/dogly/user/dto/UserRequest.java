@@ -26,6 +26,7 @@ public final class UserRequest {
     private String voivodeship;
     private String city;
     private String street;
+    private int phoneNumber;
     @JsonProperty(value = "postal_code")
     private String postalCode;
 }

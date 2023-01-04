@@ -9,7 +9,7 @@ import pk.rafi234.dogly.user.User;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @NoArgsConstructor
@@ -31,7 +31,18 @@ public class Meeting implements Serializable {
     @JoinColumn(name = "dog_park_id")
     private DogPark dogPark;
 
-    private int interested = 0;
-    private int going = 0;
-
+    @ManyToMany
+    @JoinTable(
+            name = "interested_user",
+            joinColumns = @JoinColumn(name = "interested_Id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<User> interestedUsers = new HashSet<>();
+    @ManyToMany
+    @JoinTable(
+            name = "going_user",
+            joinColumns = @JoinColumn(name = "going_Id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<User> goingUsers = new HashSet<>();
 }

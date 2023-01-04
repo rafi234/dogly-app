@@ -6,10 +6,12 @@ import org.springframework.stereotype.Service;
 import pk.rafi234.dogly.meetings.dto.MeetingRequest;
 import pk.rafi234.dogly.meetings.dto.MeetingResponse;
 import pk.rafi234.dogly.security.authenticatedUser.IAuthenticationFacade;
+import pk.rafi234.dogly.user.User;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -54,12 +56,15 @@ public class MeetingsServiceImpl implements MeetingsService {
     @Override
     public MeetingResponse action(UUID id, String action) {
         Meeting meeting = meetingsRepository.findById(id).orElseThrow();
+        User user = authenticationFacade.getAuthentication();
+        Set<User> clickedInterested = meeting.getInterestedUsers();
+        Set<User> clickedGoing = meeting.getGoingUsers();
         if (action.equals("going")) {
-            int going = meeting.getGoing() + 1;
-            meeting.setGoing(going);
+            clickedInterested.remove(user);
+            clickedGoing.add(user);
         } else if (action.equals("interested")) {
-            int interested = meeting.getInterested() + 1;
-            meeting.setInterested(interested);
+            clickedInterested.add(user);
+            clickedGoing.remove(user);
         }
         return new MeetingResponse(meetingsRepository.save(meeting));
     }
@@ -68,6 +73,7 @@ public class MeetingsServiceImpl implements MeetingsService {
     public void checkIfMeetingsNeedUpdate() {
         meetingsRepository.findAllOrderByAddedAt().forEach(this::deleteExpiredMeeting);
     }
+
     private void deleteExpiredMeeting(Meeting meeting) {
         if (isMeetingExpired(meeting)) {
             deleteMeeting(meeting.getId());

@@ -3,7 +3,6 @@ package pk.rafi234.dogly.user;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 import pk.rafi234.dogly.dog.Dog;
 import pk.rafi234.dogly.dog_ad.DogAd;
 import pk.rafi234.dogly.meetings.Meeting;
@@ -27,6 +26,8 @@ public class User {
     private String email;
     @Column(nullable = false)
     private String password;
+
+    private int phoneNumber;
 
     private boolean isActive = false;
 
@@ -57,11 +58,18 @@ public class User {
     @OneToMany(mappedBy = "confirmedUser")
     private Set<DogAd> confirmedDogAds = new HashSet<>();
 
-    public User(UUID id, String name, String surname, String email, String password) {
+    @ManyToMany(mappedBy = "interestedUsers")
+    private Set<Meeting> interestedMeeting = new HashSet<>();
+
+    @ManyToMany(mappedBy = "goingUsers")
+    private Set<Meeting> goingMeeting = new HashSet<>();
+
+    public User(UUID id, String name, String surname, String email, String password, int phoneNumber) {
         this.id = id;
         this.name = name;
         this.surname = surname;
         this.email = email;
         this.password = password;
+        this.phoneNumber = phoneNumber;
     }
 }

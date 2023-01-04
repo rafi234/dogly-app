@@ -23,6 +23,7 @@ public final class UserResponse {
     private List<DogResponse> dogs;
     private Set<String> roles;
     private boolean isActive;
+    private int phoneNumber;
 
     public UserResponse(User user) {
         this.id = user.getId().toString();
@@ -33,6 +34,7 @@ public final class UserResponse {
         this.roles = getSetOfRoles(user.getRoles());
         this.dogs = getDogList(user.getDogs());
         this.isActive = user.isActive();
+        this.phoneNumber = user.getPhoneNumber();
     }
 
     private Set<String> getSetOfRoles(Set<Group> rolesToMap) {

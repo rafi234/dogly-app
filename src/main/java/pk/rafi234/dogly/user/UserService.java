@@ -63,8 +63,14 @@ public class UserService implements CustomUserDetailsService {
             throw new UserAlreadyExist("User with " + userRequest.getEmail() + " already exist!");
         }
         Address address = createAddress(userRequest);
-        User user = new User(UUID.randomUUID(), userRequest.getName(), userRequest.getSurname(),
-                userRequest.getEmail(), passwordEncoder.encode(userRequest.getPassword()));
+        User user = new User(
+                UUID.randomUUID(),
+                userRequest.getName(),
+                userRequest.getSurname(),
+                userRequest.getEmail(),
+                passwordEncoder.encode(userRequest.getPassword()),
+                userRequest.getPhoneNumber()
+        );
         addDefaultRole(user);
         user.setAddress(address);
         addressRepository.save(address);
