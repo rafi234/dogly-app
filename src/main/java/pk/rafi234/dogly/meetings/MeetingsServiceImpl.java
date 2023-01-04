@@ -7,6 +7,7 @@ import pk.rafi234.dogly.meetings.dto.MeetingRequest;
 import pk.rafi234.dogly.meetings.dto.MeetingResponse;
 import pk.rafi234.dogly.security.authenticatedUser.IAuthenticationFacade;
 import pk.rafi234.dogly.user.User;
+import pk.rafi234.dogly.user.dto.UserResponse;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
@@ -47,10 +48,10 @@ public class MeetingsServiceImpl implements MeetingsService {
 
     @Override
     public List<MeetingResponse> getAllMeetings() {
-        return meetingsRepository.findAllOrderByAddedAt()
-                .stream()
-                .map(MeetingResponse::new)
-                .collect(Collectors.toList());
+            return meetingsRepository.findAllOrderByAddedAt()
+                    .stream()
+                    .map(MeetingResponse::new)
+                    .collect(Collectors.toList());
     }
 
     @Override
@@ -59,15 +60,28 @@ public class MeetingsServiceImpl implements MeetingsService {
         User user = authenticationFacade.getAuthentication();
         Set<User> clickedInterested = meeting.getInterestedUsers();
         Set<User> clickedGoing = meeting.getGoingUsers();
-        if (action.equals("going")) {
-            clickedInterested.remove(user);
+        boolean containsGoing = clickedGoing.stream()
+                .anyMatch(u -> u.getId().equals(user.getId()));
+        boolean containsInterested = clickedInterested.stream()
+                .anyMatch(u -> u.getId().equals(user.getId()));
+
+        System.out.println(containsInterested + " " + containsGoing + " " + action);
+
+        User userToDelete = getUserToDelete(clickedGoing, clickedInterested, user);
+        clickedGoing.remove(userToDelete);
+        clickedInterested.remove(userToDelete);
+
+        clickedGoing.forEach(System.out::println);
+        clickedInterested.forEach(System.out::println);
+
+        if (action.equals("going") && (!containsGoing || containsInterested)) {
             clickedGoing.add(user);
-        } else if (action.equals("interested")) {
+        } else if (action.equals("interested") && (!containsInterested || containsGoing)) {
             clickedInterested.add(user);
-            clickedGoing.remove(user);
         }
         return new MeetingResponse(meetingsRepository.save(meeting));
     }
+
 
     @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.DAYS)
     public void checkIfMeetingsNeedUpdate() {
@@ -82,5 +96,16 @@ public class MeetingsServiceImpl implements MeetingsService {
 
     private boolean isMeetingExpired(Meeting meeting) {
         return meeting.getDate().plusHours(5L).isBefore(LocalDateTime.now());
+    }
+
+    private User getUserToDelete(Set<User> clickedGoing, Set<User> clickedInterested, User user) {
+        List<User> usersToDeleteFromGoing = clickedGoing.stream().filter(u -> u.equals(user)).toList();
+        List<User> usersToDeleteFromInterested = clickedInterested.stream().filter(u -> u.equals(user)).toList();
+        if (usersToDeleteFromGoing.size() > 0)
+            return usersToDeleteFromGoing.get(0);
+        if (usersToDeleteFromInterested.size() > 0) {
+            return usersToDeleteFromInterested.get(0);
+        }
+        return null;
     }
 }

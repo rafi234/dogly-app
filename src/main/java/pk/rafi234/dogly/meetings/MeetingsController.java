@@ -5,6 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pk.rafi234.dogly.meetings.dto.MeetingRequest;
 import pk.rafi234.dogly.meetings.dto.MeetingResponse;
+import pk.rafi234.dogly.user.User;
+import pk.rafi234.dogly.user.dto.UserResponse;
 
 import java.util.List;
 import java.util.UUID;
