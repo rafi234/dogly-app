@@ -7,7 +7,6 @@ import pk.rafi234.dogly.meetings.dto.MeetingRequest;
 import pk.rafi234.dogly.meetings.dto.MeetingResponse;
 import pk.rafi234.dogly.security.authenticatedUser.IAuthenticationFacade;
 import pk.rafi234.dogly.user.User;
-import pk.rafi234.dogly.user.dto.UserResponse;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;

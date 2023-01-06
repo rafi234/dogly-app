@@ -13,7 +13,7 @@ public interface CustomUserDetailsService {
 
     void deleteUser(String email);
 
-    PasswordChangeResponse updatePassword(String newPassword);
+    PasswordChangeResponse updatePassword(String newPassword, String email);
 
     void setStateOfUser(boolean state);
 
