@@ -96,8 +96,9 @@ public class UserService implements CustomUserDetailsService {
     }
 
     @Override
-    public PasswordChangeResponse updatePassword(String newPassword) {
-        User user = authenticationFacade.getAuthentication();
+    public PasswordChangeResponse updatePassword(String newPassword, String email) {
+        User user = userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() ->  new RuntimeException("User with email: " + email + " not found!"));
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         return new PasswordChangeResponse(user.getEmail(), "Password changed successfully!");

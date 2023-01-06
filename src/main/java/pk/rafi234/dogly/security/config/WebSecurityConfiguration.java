@@ -14,12 +14,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import pk.rafi234.dogly.security.UserDetailsImpl;
 import pk.rafi234.dogly.security.filter.CustomAuthorizationFilter;
-import pk.rafi234.dogly.user.CustomUserDetailsService;
 import pk.rafi234.dogly.user.UserRepository;
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
@@ -28,7 +25,6 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @EnableWebSecurity
 public class WebSecurityConfiguration {
     private final UserRepository userRepository;
-    private final CustomUserDetailsService userDetailsService;
     private final CustomAuthorizationFilter authorizationFilter;
 
 
@@ -36,10 +32,8 @@ public class WebSecurityConfiguration {
     @Autowired
     public WebSecurityConfiguration(
             UserRepository userRepository,
-            @Lazy CustomUserDetailsService userDetailsService,
-            @Lazy CustomAuthorizationFilter authorizationFilter) throws Exception {
+            @Lazy CustomAuthorizationFilter authorizationFilter) {
         this.userRepository = userRepository;
-        this.userDetailsService = userDetailsService;
         this.authorizationFilter = authorizationFilter;
     }
 
@@ -47,37 +41,12 @@ public class WebSecurityConfiguration {
     protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors();
         http.csrf().disable();
-//        http.authorizeRequests().antMatchers("/api/authenticate").permitAll()
-//                .antMatchers(HttpHeaders.ALLOW).permitAll()
-//                .anyRequest().authenticated();
         http.authorizeRequests().anyRequest().permitAll();
         http.sessionManagement().sessionCreationPolicy(STATELESS);
         http.addFilterBefore(
                 authorizationFilter,
                 UsernamePasswordAuthenticationFilter.class
         );
-//        http
-//                .httpBasic()
-//                .and()
-//                .cors().disable()
-//                .csrf().disable()
-//                .headers().frameOptions().disable()
-//                .and()
-//                .authorizeRequests()
-//                .anyRequest().permitAll()
-//                .and()
-//                .formLogin()
-//                .successHandler(authenticationSuccessHandler())
-//                .defaultSuccessUrl("/api/user", true)
-//                .and()
-//                .logout()
-//                .deleteCookies("JSESSIONID")
-//                .addLogoutHandler(securityContextLogoutHandler())
-//                .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.OK))
-//                .permitAll()
-//                .and()
-//                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-
         return http.build();
     }
 

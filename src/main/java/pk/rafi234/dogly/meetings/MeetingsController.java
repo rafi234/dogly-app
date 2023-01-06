@@ -5,8 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pk.rafi234.dogly.meetings.dto.MeetingRequest;
 import pk.rafi234.dogly.meetings.dto.MeetingResponse;
-import pk.rafi234.dogly.user.User;
-import pk.rafi234.dogly.user.dto.UserResponse;
+import pk.rafi234.dogly.security.annotation.IsUser;
+import pk.rafi234.dogly.security.annotation.IsUserLogged;
 
 import java.util.List;
 import java.util.UUID;
@@ -19,17 +19,20 @@ public class MeetingsController {
     private final MeetingsService meetingsService;
 
     @PostMapping()
+    @IsUser
     public ResponseEntity<MeetingResponse> createMeetings(@RequestBody MeetingRequest meetingRequest) {
         return ResponseEntity.ok(meetingsService.addMeeting(meetingRequest));
     }
 
     @DeleteMapping("/{id}")
+    @IsUserLogged
     public ResponseEntity<?> deleteMeeting(@PathVariable String id) {
         meetingsService.deleteMeeting(UUID.fromString(id));
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{id}/action")
+    @IsUser
     public ResponseEntity<?> actionMeeting(
             @PathVariable String id,
             @RequestParam String action) {
