@@ -19,7 +19,7 @@ public class UserController {
     private final CustomUserDetailsService userDetailsService;
 
     @PostMapping("/api/auth/signup")
-    public ResponseEntity<UserResponse> createUser(@RequestBody UserRequest userRequest) {
+    public ResponseEntity<UserResponse> createUser(@RequestBody @Valid UserRequest userRequest) {
         return ResponseEntity.ok(userDetailsService.addUser(userRequest));
     }
 
@@ -68,7 +68,7 @@ public class UserController {
 
     @PutMapping("/api/user/update")
     @IsUserLogged
-    public ResponseEntity<UserResponse> updateUser(@RequestBody UserRequest userRequest) {
+    public ResponseEntity<UserResponse> updateUser(@Valid @RequestBody UserRequest userRequest) {
         return ResponseEntity.ok(userDetailsService.updateUser(userRequest));
     }
 }

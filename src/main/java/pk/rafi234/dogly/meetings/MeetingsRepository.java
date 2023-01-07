@@ -1,9 +1,9 @@
 package pk.rafi234.dogly.meetings;
 
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import pk.rafi234.dogly.user.User;
 
 import java.util.List;
 import java.util.UUID;
@@ -16,4 +16,6 @@ public interface MeetingsRepository extends JpaRepository<Meeting, UUID> {
             nativeQuery = true
     )
     List<Meeting> findAllOrderByAddedAt();
+
+    List<Meeting> findAllByUserOrderByAddedAt(User user);
 }

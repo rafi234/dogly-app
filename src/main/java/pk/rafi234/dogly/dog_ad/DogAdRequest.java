@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import pk.rafi234.dogly.user.dto.UserRequest;
 
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -12,10 +13,17 @@ import java.util.Set;
 public final class DogAdRequest {
 
     private String id;
+
     private Set<String> dogIds;
-    private String description;
+
+    @NotNull(message = "Date can't be null!")
     private LocalDateTime date;
-    private UserRequest user;
+
+    @NotNull(message = "Remuneration can't be null!")
     private double price;
+
+    private String description;
+
+    private UserRequest user;
     private AdState adState;
 }

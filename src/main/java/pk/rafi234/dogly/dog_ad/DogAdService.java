@@ -41,11 +41,13 @@ public class DogAdService {
 
     public List<DogAdResponse> getAllDogAds(String page) {
         List<DogAd> dogAds = new ArrayList<>();
-        if (page.equals("walk"))
-            dogAds = dogAdRepository.findAllByAdState(WAITING_FOR_USER);
-        else if (page.equals("user")) {
-            User user = authenticationFacade.getAuthentication();
-            dogAds = dogAdRepository.findAllByConfirmedUserAndAdState(user, WAITING_FOR_REALIZATION);
+        switch (page) {
+            case "walk" -> dogAds = dogAdRepository.findAllByAdState(WAITING_FOR_USER);
+            case "user" -> {
+                User user = authenticationFacade.getAuthentication();
+                dogAds = dogAdRepository.findAllByConfirmedUserAndAdState(user, WAITING_FOR_REALIZATION);
+            }
+            case "admin" -> dogAds = dogAdRepository.findAll();
         }
         return mapDogAdsListToDTO(dogAds);
     }
@@ -150,4 +152,12 @@ public class DogAdService {
     }
 
 
+    public DogAdResponse updateDogAd(DogAdRequest dogAdRequest) {
+        UUID id = UUID.fromString(dogAdRequest.getId());
+        DogAd dogAd = dogAdRepository.findById(id).orElseThrow();
+        dogAd.setDate(dogAdRequest.getDate());
+        dogAd.setPrice(dogAdRequest.getPrice());
+        dogAd.setDescription(dogAdRequest.getDescription());
+        return new DogAdResponse(dogAdRepository.save(dogAd));
+    }
 }

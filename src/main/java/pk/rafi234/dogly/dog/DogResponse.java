@@ -7,7 +7,6 @@ import pk.rafi234.dogly.image.Image;
 import pk.rafi234.dogly.image.ImageResponse;
 
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -19,6 +18,9 @@ public final class DogResponse {
     private String name;
     private Date dogsBirth;
     private String breed;
+    private String ownerName;
+    private String ownerSurname;
+    private String ownerEmail;
     private Set<ImageResponse> images;
 
     public DogResponse(Dog dog) {
@@ -26,6 +28,9 @@ public final class DogResponse {
         this.name = dog.getName();
         this.dogsBirth = dog.getDogsBirth();
         this.breed = dog.getBreed();
+        this.ownerName = dog.getOwner().getName();
+        this.ownerSurname = dog.getOwner().getSurname();
+        this.ownerEmail = dog.getOwner().getEmail();
         this.images = prepareImages(dog.getImages());
     }
 

@@ -68,20 +68,21 @@ public class DogServiceImpl implements IDogService {
     }
 
     @Override
+    public List<DogResponse> getAllDog() {
+        List<Dog> dogs = (List<Dog>) dogRepository.findAll();
+        return dogListToDogResponseList(dogs);
+    }
+
+    @Override
     public List<DogResponse> getLoggedUserDog() {
         User owner = authenticationFacade.getAuthentication();
         List<Dog> dogs;
         Group groupAdmin = new Group(ADMIN);
-        System.out.println(owner.getRoles().stream().anyMatch(role -> role.equals(groupAdmin)));
-        System.out.println();
-        System.out.println();
         if (owner.getRoles().stream().anyMatch(role -> role.equals(groupAdmin)))
             dogs = (List<Dog>) dogRepository.findAll();
         else
             dogs = dogRepository.findByOwner(owner);
-        return dogs.stream()
-                .map(DogResponse::new)
-                .collect(Collectors.toList());
+        return dogListToDogResponseList(dogs);
     }
 
     @Override
@@ -102,5 +103,11 @@ public class DogServiceImpl implements IDogService {
             throw new RuntimeException("Problems with uploading files!");
         }
 
+    }
+
+    private List<DogResponse> dogListToDogResponseList(List<Dog> dogs) {
+        return dogs.stream()
+                .map(DogResponse::new)
+                .collect(Collectors.toList());
     }
 }

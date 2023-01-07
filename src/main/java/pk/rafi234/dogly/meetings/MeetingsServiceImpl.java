@@ -36,7 +36,6 @@ public class MeetingsServiceImpl implements MeetingsService {
         meeting.setDate(time);
         meeting.setAddedAt(LocalDateTime.now());
         meeting.setDogPark(meetingReq.getDogPark());
-        System.out.println("Hello!!!");
         return new MeetingResponse(meetingsRepository.save(meeting));
     }
 
@@ -46,11 +45,18 @@ public class MeetingsServiceImpl implements MeetingsService {
     }
 
     @Override
-    public List<MeetingResponse> getAllMeetings() {
-            return meetingsRepository.findAllOrderByAddedAt()
-                    .stream()
-                    .map(MeetingResponse::new)
-                    .collect(Collectors.toList());
+    public List<MeetingResponse> getMeetings(String page) {
+        if (page.equals("meeting") || page.equals("admin")) {
+            return meetingsListToMeetingsResponseList(
+                    meetingsRepository.findAllOrderByAddedAt()
+            );
+        } else if (page.equals("user")) {
+            User user = authenticationFacade.getAuthentication();
+            return meetingsListToMeetingsResponseList(
+                    meetingsRepository.findAllByUserOrderByAddedAt(user)
+            );
+        }
+        throw new RuntimeException("Unknown request at GET /api/meetings!");
     }
 
     @Override
@@ -64,20 +70,26 @@ public class MeetingsServiceImpl implements MeetingsService {
         boolean containsInterested = clickedInterested.stream()
                 .anyMatch(u -> u.getId().equals(user.getId()));
 
-        System.out.println(containsInterested + " " + containsGoing + " " + action);
-
         User userToDelete = getUserToDelete(clickedGoing, clickedInterested, user);
         clickedGoing.remove(userToDelete);
         clickedInterested.remove(userToDelete);
-
-        clickedGoing.forEach(System.out::println);
-        clickedInterested.forEach(System.out::println);
 
         if (action.equals("going") && (!containsGoing || containsInterested)) {
             clickedGoing.add(user);
         } else if (action.equals("interested") && (!containsInterested || containsGoing)) {
             clickedInterested.add(user);
         }
+        return new MeetingResponse(meetingsRepository.save(meeting));
+    }
+
+    @Override
+    public MeetingResponse updateMeeting(MeetingRequest meetingRequest) {
+        UUID id = UUID.fromString(meetingRequest.getId());
+        Meeting meeting = meetingsRepository.findById(id).orElseThrow();
+        meeting.setDate(LocalDateTime.parse(meetingRequest.getDate()));
+        meeting.setDescription(meeting.getDescription());
+        meeting.setTitle(meeting.getTitle());
+        meeting.setDogPark(meetingRequest.getDogPark());
         return new MeetingResponse(meetingsRepository.save(meeting));
     }
 
@@ -106,5 +118,11 @@ public class MeetingsServiceImpl implements MeetingsService {
             return usersToDeleteFromInterested.get(0);
         }
         return null;
+    }
+
+    private List<MeetingResponse> meetingsListToMeetingsResponseList(List<Meeting> meetings) {
+        return meetings.stream()
+                .map(MeetingResponse::new)
+                .collect(Collectors.toList());
     }
 }
