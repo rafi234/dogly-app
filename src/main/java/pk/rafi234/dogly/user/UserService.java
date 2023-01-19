@@ -1,6 +1,6 @@
 package pk.rafi234.dogly.user;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -10,6 +10,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import pk.rafi234.dogly.image.Image;
+import pk.rafi234.dogly.image.ImageService;
 import pk.rafi234.dogly.security.authenticatedUser.IAuthenticationFacade;
 import pk.rafi234.dogly.security.role.Group;
 import pk.rafi234.dogly.security.role.GroupRepository;
@@ -18,47 +21,36 @@ import pk.rafi234.dogly.security.util.JwtUtil;
 import pk.rafi234.dogly.user.address.Address;
 import pk.rafi234.dogly.user.address.AddressRepository;
 import pk.rafi234.dogly.user.dto.*;
+import pk.rafi234.dogly.user.user_exception.DeleteOwnerException;
+import pk.rafi234.dogly.user.user_exception.UploadingFilesException;
 import pk.rafi234.dogly.user.user_exception.UserAlreadyExist;
 
 import javax.transaction.Transactional;
+import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class UserService implements CustomUserDetailsService {
 
     private final AddressRepository addressRepository;
-
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
     private final IAuthenticationFacade authenticationFacade;
-
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
+    private final ImageService imageService;
     private final JwtUtil jwtUtil;
 
-    @Autowired
-    public UserService(AddressRepository addressRepository, GroupRepository groupRepository,
-                       UserRepository userRepository,
-                       PasswordEncoder passwordEncoder, IAuthenticationFacade authenticationFacade,
-                       AuthenticationManager authenticationManager, UserDetailsService userDetailsService, JwtUtil jwtUtil) {
-        this.addressRepository = addressRepository;
-        this.groupRepository = groupRepository;
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.authenticationFacade = authenticationFacade;
-        this.authenticationManager = authenticationManager;
-        this.userDetailsService = userDetailsService;
-        this.jwtUtil = jwtUtil;
-    }
-
     @Override
-    public UserResponse addUser(UserRequest userRequest) {
+    public UserResponse addUser(UserRequest userRequest, MultipartFile[] multipartFiles) {
         if (userRepository.existsByEmail(userRequest.getEmail())) {
             throw new UserAlreadyExist("User with " + userRequest.getEmail() + " already exist!");
         }
@@ -74,8 +66,9 @@ public class UserService implements CustomUserDetailsService {
         addDefaultRole(user);
         user.setAddress(address);
         addressRepository.save(address);
-        userRepository.save(user);
-        return new UserResponse(user);
+        User savedUser = userRepository.save(user);
+        prepareImages(savedUser, multipartFiles);
+        return new UserResponse(savedUser);
     }
 
     @Override
@@ -92,13 +85,18 @@ public class UserService implements CustomUserDetailsService {
 
     @Override
     public void deleteUser(String email) {
-        userRepository.delete(getUserByEmailOrThrow(email));
+        User user = getUserByEmailOrThrow(email);
+        Group owner = groupRepository.findByRole(Role.OWNER);
+        if (user.getRoles().contains(owner)) {
+            throw new DeleteOwnerException("You cannot delete owner");
+        }
+        userRepository.delete(user);
     }
 
     @Override
     public PasswordChangeResponse updatePassword(String newPassword, String email) {
         User user = userRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() ->  new RuntimeException("User with email: " + email + " not found!"));
+                .orElseThrow(() -> new UsernameNotFoundException("User with email: " + email + " not found!"));
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         return new PasswordChangeResponse(user.getEmail(), "Password changed successfully!");
@@ -112,10 +110,20 @@ public class UserService implements CustomUserDetailsService {
     }
 
     @Override
-    public UserResponse updateUser(UserRequest userRequest) {
-        User user = getUserByEmailOrThrow(userRequest.getEmail());
-        updateUser(user, userRequest);
-        return new UserResponse(userRepository.save(user));
+    public UserResponse updateUser(UserRequest userRequest, MultipartFile[] multipartFiles) {
+        User user = userRepository.findById(UUID.fromString(userRequest.getId())).orElseThrow();
+        User userToCheck = userRepository.findByEmailIgnoreCase(user.getEmail()).orElse(new User());
+        if (userRequest.getEmail().equals(user.getEmail()) || userToCheck.getId() == null) {
+            updateUser(user, userRequest);
+            imageService.deleteAllUserImages(user);
+            user.setImages(new HashSet<>());
+            User savedUser = userRepository.save(user);
+            if (multipartFiles != null) {
+                prepareImages(savedUser, multipartFiles);
+            }
+            return new UserResponse(savedUser);
+        }
+        throw new UserAlreadyExist("User with email: " + userRequest.getEmail() + " already exist!");
     }
 
     @Override
@@ -134,6 +142,7 @@ public class UserService implements CustomUserDetailsService {
         User loggedUser = authenticationFacade.getAuthentication();
         return new UserResponse(loggedUser);
     }
+
     public User getUserByEmailOrThrow(String email) {
         return userRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User with email" + email + " not found!"));
@@ -169,9 +178,10 @@ public class UserService implements CustomUserDetailsService {
     }
 
     private void updateUser(User user, UserRequest userRequest) {
+
         String newEmail = userRequest.getEmail();
         if (newEmail != null) {
-            user.setEmail(newEmail);
+            user.setEmail(userRequest.getEmail());
         }
 
         String newName = userRequest.getName();
@@ -208,5 +218,24 @@ public class UserService implements CustomUserDetailsService {
         if (newCity != null) {
             user.getAddress().setCity(newCity);
         }
+
+        int newPhoneNumber = userRequest.getPhoneNumber();
+        if (newCity != null) {
+            user.setPhoneNumber(newPhoneNumber);
+        }
+    }
+
+    private void prepareImages(User savedUser, MultipartFile[] files) {
+        try {
+            Set<Image> images = imageService.uploadImage(files);
+
+            images.forEach(i -> {
+                i.setUser(savedUser);
+                imageService.saveImage(i);
+            });
+        } catch (IOException e) {
+            throw new UploadingFilesException("Problems with uploading files!");
+        }
+
     }
 }

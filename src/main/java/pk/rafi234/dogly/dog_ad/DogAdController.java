@@ -1,6 +1,7 @@
 package pk.rafi234.dogly.dog_ad;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pk.rafi234.dogly.security.annotation.IsUser;
@@ -24,7 +25,7 @@ public class DogAdController {
     @PostMapping()
     @IsUser
     public ResponseEntity<DogAdResponse> createDogAd(@RequestBody @Valid DogAdRequest dogAdRequest) {
-        return ResponseEntity.ok(dogAdService.addDogAd(dogAdRequest));
+        return new ResponseEntity<>(dogAdService.addDogAd(dogAdRequest), HttpStatus.CREATED);
     }
 
 

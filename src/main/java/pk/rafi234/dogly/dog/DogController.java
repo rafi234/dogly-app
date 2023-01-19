@@ -1,6 +1,7 @@
 package pk.rafi234.dogly.dog;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +25,7 @@ public class DogController {
     public ResponseEntity<DogResponse> createDog(@RequestPart("dog") @Valid DogRequest dogRequest,
                                                  @RequestPart("imageFile") MultipartFile[] images
     ) {
-        return ResponseEntity.ok(dogService.addDog(dogRequest, images));
+        return new ResponseEntity<>(dogService.addDog(dogRequest, images), HttpStatus.CREATED);
     }
 
     @GetMapping("/user")

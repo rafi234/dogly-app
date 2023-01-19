@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import pk.rafi234.dogly.dog.Dog;
 import pk.rafi234.dogly.dog.DogResponse;
+import pk.rafi234.dogly.image.ImageResponse;
 import pk.rafi234.dogly.security.role.Group;
 import pk.rafi234.dogly.user.User;
 import pk.rafi234.dogly.user.address.Address;
@@ -24,6 +25,7 @@ public final class UserResponse {
     private Set<String> roles;
     private boolean isActive;
     private int phoneNumber;
+    private Set<ImageResponse> images;
 
     public UserResponse(User user) {
         this.id = user.getId().toString();
@@ -35,6 +37,9 @@ public final class UserResponse {
         this.dogs = getDogList(user.getDogs());
         this.isActive = user.isActive();
         this.phoneNumber = user.getPhoneNumber();
+        this.images = user.getImages().stream()
+                .map(ImageResponse::new)
+                .collect(Collectors.toSet());
     }
 
     private Set<String> getSetOfRoles(Set<Group> rolesToMap) {

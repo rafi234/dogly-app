@@ -5,6 +5,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import pk.rafi234.dogly.dog.Dog;
 import pk.rafi234.dogly.dog.DogRepository;
+import pk.rafi234.dogly.dog_ad.exception.ItselfWalkConfirmationException;
 import pk.rafi234.dogly.security.authenticatedUser.IAuthenticationFacade;
 import pk.rafi234.dogly.user.User;
 
@@ -60,7 +61,7 @@ public class DogAdService {
         switch (action) {
             case "confirm" -> {
                 if (user.getId().toString().equals(dogAdRequest.getUser().getId()))
-                    throw new RuntimeException("User can not confirm the walk created by itself");
+                    throw new ItselfWalkConfirmationException("User can not confirm the walk created by itself");
                 setConfirmation(id, confirmedAt, user, WAITING_FOR_CONFIRMATION);
             }
             case "denied"    -> setConfirmation(id, confirmedAt,  DENIED);

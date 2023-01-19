@@ -1,6 +1,7 @@
 package pk.rafi234.dogly.security;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -22,6 +23,6 @@ public class SecurityController {
             @RequestParam String action,
             @PathVariable String id
     ) {
-        return ResponseEntity.ok(securityService.grantPermission(role, id, action));
+        return new ResponseEntity<>(securityService.grantPermission(role, id, action), HttpStatus.OK);
     }
 }

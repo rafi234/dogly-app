@@ -1,6 +1,7 @@
 package pk.rafi234.dogly.meetings;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pk.rafi234.dogly.meetings.dto.MeetingRequest;
@@ -23,7 +24,7 @@ public class MeetingsController {
     @PostMapping()
     @IsUser
     public ResponseEntity<MeetingResponse> createMeetings(@RequestBody @Valid MeetingRequest meetingRequest) {
-        return ResponseEntity.ok(meetingsService.addMeeting(meetingRequest));
+        return new ResponseEntity<>(meetingsService.addMeeting(meetingRequest), HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{id}")

@@ -5,6 +5,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import pk.rafi234.dogly.meetings.dto.MeetingRequest;
 import pk.rafi234.dogly.meetings.dto.MeetingResponse;
+import pk.rafi234.dogly.meetings.exception.WrongRequestParamsException;
 import pk.rafi234.dogly.security.authenticatedUser.IAuthenticationFacade;
 import pk.rafi234.dogly.user.User;
 
@@ -56,7 +57,7 @@ public class MeetingsServiceImpl implements MeetingsService {
                     meetingsRepository.findAllByUserOrderByAddedAt(user)
             );
         }
-        throw new RuntimeException("Unknown request at GET /api/meetings!");
+        throw new WrongRequestParamsException("Unknown request at GET /api/meetings!");
     }
 
     @Override

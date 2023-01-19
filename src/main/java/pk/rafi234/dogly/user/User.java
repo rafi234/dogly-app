@@ -1,11 +1,11 @@
 package pk.rafi234.dogly.user;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import pk.rafi234.dogly.dog.Dog;
 import pk.rafi234.dogly.dog_ad.DogAd;
+import pk.rafi234.dogly.image.Image;
 import pk.rafi234.dogly.meetings.Meeting;
 import pk.rafi234.dogly.security.role.Group;
 import pk.rafi234.dogly.user.address.Address;
@@ -31,6 +31,10 @@ public class User {
     private int phoneNumber;
 
     private boolean isActive = false;
+
+
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.ALL})
+    private Set<Image> images = new HashSet<>();
 
     @ManyToMany(
             cascade = {CascadeType.PERSIST, CascadeType.MERGE},
