@@ -1,9 +1,12 @@
 package pk.rafi234.dogly.user;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import pk.rafi234.dogly.security.annotation.IsAdminOrOwner;
 import pk.rafi234.dogly.security.annotation.IsUserLogged;
 import pk.rafi234.dogly.user.dto.*;
@@ -18,9 +21,15 @@ public class UserController {
 
     private final CustomUserDetailsService userDetailsService;
 
-    @PostMapping("/api/auth/signup")
-    public ResponseEntity<UserResponse> createUser(@RequestBody UserRequest userRequest) {
-        return ResponseEntity.ok(userDetailsService.addUser(userRequest));
+    @PostMapping(
+            value = "/api/auth/signup",
+            consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}
+    )
+    public ResponseEntity<UserResponse> createUser(
+            @RequestPart("user") @Valid UserRequest userRequest,
+            @RequestPart("imageFiles") MultipartFile[] multipartFiles
+    ) {
+        return new ResponseEntity<>(userDetailsService.addUser(userRequest, multipartFiles), HttpStatus.CREATED);
     }
 
     @PutMapping("/api/logout")
@@ -31,7 +40,7 @@ public class UserController {
 
     @PostMapping("/api/authenticate")
     public ResponseEntity<JwtResponse> createJwtToken(@RequestBody JwtRequest jwtRequest) throws Exception {
-        return ResponseEntity.ok(userDetailsService.createJwtToken(jwtRequest));
+        return new ResponseEntity<>(userDetailsService.createJwtToken(jwtRequest), HttpStatus.CREATED);
     }
 
     @GetMapping("/api/user")
@@ -66,9 +75,15 @@ public class UserController {
         );
     }
 
-    @PutMapping("/api/user/update")
+    @PutMapping(
+            value = "/api/user/update",
+            consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}
+    )
     @IsUserLogged
-    public ResponseEntity<UserResponse> updateUser(@RequestBody UserRequest userRequest) {
-        return ResponseEntity.ok(userDetailsService.updateUser(userRequest));
+    public ResponseEntity<UserResponse> updateUser(
+            @RequestPart("user") UserRequest userRequest,
+            @RequestPart(name = "imageFiles", required = false) MultipartFile[] multipartFiles
+    ) {
+        return ResponseEntity.ok(userDetailsService.updateUser(userRequest, multipartFiles));
     }
 }

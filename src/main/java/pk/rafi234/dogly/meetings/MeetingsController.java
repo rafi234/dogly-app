@@ -1,13 +1,16 @@
 package pk.rafi234.dogly.meetings;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pk.rafi234.dogly.meetings.dto.MeetingRequest;
 import pk.rafi234.dogly.meetings.dto.MeetingResponse;
 import pk.rafi234.dogly.security.annotation.IsUser;
 import pk.rafi234.dogly.security.annotation.IsUserLogged;
+import pk.rafi234.dogly.security.annotation.IsUserOrAdmin;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,8 +23,8 @@ public class MeetingsController {
 
     @PostMapping()
     @IsUser
-    public ResponseEntity<MeetingResponse> createMeetings(@RequestBody MeetingRequest meetingRequest) {
-        return ResponseEntity.ok(meetingsService.addMeeting(meetingRequest));
+    public ResponseEntity<MeetingResponse> createMeetings(@RequestBody @Valid MeetingRequest meetingRequest) {
+        return new ResponseEntity<>(meetingsService.addMeeting(meetingRequest), HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{id}")
@@ -40,8 +43,14 @@ public class MeetingsController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping
+    @IsUserOrAdmin
+    public ResponseEntity<MeetingResponse> updateMeeting(@RequestBody @Valid MeetingRequest meetingRequest) {
+        return ResponseEntity.ok(meetingsService.updateMeeting(meetingRequest));
+    }
+
     @GetMapping()
-    public ResponseEntity<List<MeetingResponse>> getAllMeetings() {
-        return ResponseEntity.ok(meetingsService.getAllMeetings());
+    public ResponseEntity<List<MeetingResponse>> getAllMeetings(@RequestParam String page) {
+        return ResponseEntity.ok(meetingsService.getMeetings(page));
     }
 }

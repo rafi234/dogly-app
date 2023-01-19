@@ -19,5 +19,7 @@ public final class PasswordChangeRequest {
                     " also should not have any spaces.")
     @JsonProperty(value = "new_password")
     String newPassword;
+
+    @NotBlank(message = "Id can't be blank!")
     String id;
 }

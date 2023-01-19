@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import pk.rafi234.dogly.dog.Dog;
+import pk.rafi234.dogly.user.User;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -34,5 +35,9 @@ public class ImageService {
 
     public void deleteAllDogImages(Dog dog) {
         imageRepository.deleteByDog(dog);
+    }
+
+    public void deleteAllUserImages(User user) {
+        imageRepository.deleteByUser(user);
     }
 }

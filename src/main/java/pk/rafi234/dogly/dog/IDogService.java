@@ -12,4 +12,7 @@ public interface IDogService {
     void deleteDogById(String id);
 
     DogResponse editDog(DogRequest dogRequest, MultipartFile[] files);
+
+    List<DogResponse> getAllDog();
 }
+

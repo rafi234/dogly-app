@@ -5,6 +5,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import pk.rafi234.dogly.dog.Dog;
 import pk.rafi234.dogly.dog.DogRepository;
+import pk.rafi234.dogly.dog_ad.exception.ItselfWalkConfirmationException;
 import pk.rafi234.dogly.security.authenticatedUser.IAuthenticationFacade;
 import pk.rafi234.dogly.user.User;
 
@@ -41,11 +42,13 @@ public class DogAdService {
 
     public List<DogAdResponse> getAllDogAds(String page) {
         List<DogAd> dogAds = new ArrayList<>();
-        if (page.equals("walk"))
-            dogAds = dogAdRepository.findAllByAdState(WAITING_FOR_USER);
-        else if (page.equals("user")) {
-            User user = authenticationFacade.getAuthentication();
-            dogAds = dogAdRepository.findAllByConfirmedUserAndAdState(user, WAITING_FOR_REALIZATION);
+        switch (page) {
+            case "walk" -> dogAds = dogAdRepository.findAllByAdState(WAITING_FOR_USER);
+            case "user" -> {
+                User user = authenticationFacade.getAuthentication();
+                dogAds = dogAdRepository.findAllByConfirmedUserAndAdState(user, WAITING_FOR_REALIZATION);
+            }
+            case "admin" -> dogAds = dogAdRepository.findAll();
         }
         return mapDogAdsListToDTO(dogAds);
     }
@@ -58,7 +61,7 @@ public class DogAdService {
         switch (action) {
             case "confirm" -> {
                 if (user.getId().toString().equals(dogAdRequest.getUser().getId()))
-                    throw new RuntimeException("User can not confirm the walk created by itself");
+                    throw new ItselfWalkConfirmationException("User can not confirm the walk created by itself");
                 setConfirmation(id, confirmedAt, user, WAITING_FOR_CONFIRMATION);
             }
             case "denied"    -> setConfirmation(id, confirmedAt,  DENIED);
@@ -150,4 +153,12 @@ public class DogAdService {
     }
 
 
+    public DogAdResponse updateDogAd(DogAdRequest dogAdRequest) {
+        UUID id = UUID.fromString(dogAdRequest.getId());
+        DogAd dogAd = dogAdRepository.findById(id).orElseThrow();
+        dogAd.setDate(dogAdRequest.getDate());
+        dogAd.setPrice(dogAdRequest.getPrice());
+        dogAd.setDescription(dogAdRequest.getDescription());
+        return new DogAdResponse(dogAdRepository.save(dogAd));
+    }
 }

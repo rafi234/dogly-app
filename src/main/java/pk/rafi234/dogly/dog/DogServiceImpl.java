@@ -1,6 +1,6 @@
 package pk.rafi234.dogly.dog;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import pk.rafi234.dogly.image.Image;
@@ -8,6 +8,7 @@ import pk.rafi234.dogly.image.ImageService;
 import pk.rafi234.dogly.security.authenticatedUser.IAuthenticationFacade;
 import pk.rafi234.dogly.security.role.Group;
 import pk.rafi234.dogly.user.User;
+import pk.rafi234.dogly.user.user_exception.UploadingFilesException;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
@@ -18,18 +19,12 @@ import static pk.rafi234.dogly.security.role.Role.ADMIN;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class DogServiceImpl implements IDogService {
 
     private final DogRepository dogRepository;
     private final IAuthenticationFacade authenticationFacade;
     private final ImageService imageService;
-
-    @Autowired
-    public DogServiceImpl(DogRepository dogRepository, IAuthenticationFacade authenticationFacade, ImageService imageService) {
-        this.dogRepository = dogRepository;
-        this.authenticationFacade = authenticationFacade;
-        this.imageService = imageService;
-    }
 
     @Override
     public DogResponse addDog(DogRequest dogRequest, MultipartFile[] files) {
@@ -68,20 +63,21 @@ public class DogServiceImpl implements IDogService {
     }
 
     @Override
+    public List<DogResponse> getAllDog() {
+        List<Dog> dogs = (List<Dog>) dogRepository.findAll();
+        return dogListToDogResponseList(dogs);
+    }
+
+    @Override
     public List<DogResponse> getLoggedUserDog() {
         User owner = authenticationFacade.getAuthentication();
         List<Dog> dogs;
         Group groupAdmin = new Group(ADMIN);
-        System.out.println(owner.getRoles().stream().anyMatch(role -> role.equals(groupAdmin)));
-        System.out.println();
-        System.out.println();
         if (owner.getRoles().stream().anyMatch(role -> role.equals(groupAdmin)))
             dogs = (List<Dog>) dogRepository.findAll();
         else
             dogs = dogRepository.findByOwner(owner);
-        return dogs.stream()
-                .map(DogResponse::new)
-                .collect(Collectors.toList());
+        return dogListToDogResponseList(dogs);
     }
 
     @Override
@@ -99,8 +95,14 @@ public class DogServiceImpl implements IDogService {
                     imageService.saveImage(i);
             });
         } catch (IOException e) {
-            throw new RuntimeException("Problems with uploading files!");
+            throw new UploadingFilesException("Problems with uploading files!");
         }
 
+    }
+
+    private List<DogResponse> dogListToDogResponseList(List<Dog> dogs) {
+        return dogs.stream()
+                .map(DogResponse::new)
+                .collect(Collectors.toList());
     }
 }
